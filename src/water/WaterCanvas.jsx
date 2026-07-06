@@ -11,41 +11,45 @@ export default function WaterCanvas() {
     let animation;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      physics = new WaterPhysics(canvas.width, canvas.height, 5);
+      canvas.width = Math.floor(window.innerWidth);
+      canvas.height = Math.floor(window.innerHeight);
+      physics = new WaterPhysics(canvas.width, canvas.height, 4);
     };
 
     resize();
     window.addEventListener('resize', resize);
 
+    let last = null;
     const interact = (event) => {
       const rect = canvas.getBoundingClientRect();
-      const x = (event.clientX ?? event.touches[0].clientX) - rect.left;
-      const y = (event.clientY ?? event.touches[0].clientY) - rect.top;
-      physics.disturb(x, y);
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const force = last ? Math.min(35, Math.hypot(x - last.x, y - last.y) * 2) : 18;
+      physics.disturb(x, y, force);
+      last = { x, y };
     };
 
     canvas.addEventListener('pointermove', interact);
     canvas.addEventListener('pointerdown', interact);
+    canvas.addEventListener('pointerup', () => last = null);
 
     const draw = () => {
       physics.update();
-
       const image = ctx.createImageData(canvas.width, canvas.height);
       const data = image.data;
 
       for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
-          const i = (y * canvas.width + x) * 4;
-          const wave = physics.current[
-            Math.min(physics.rows - 1, Math.floor(y / physics.resolution)) * physics.cols +
-            Math.min(physics.cols - 1, Math.floor(x / physics.resolution))
-          ] || 0;
+          const gx = Math.floor(x / physics.resolution);
+          const gy = Math.floor(y / physics.resolution);
+          const wave = physics.current[Math.min(physics.rows - 1, gy) * physics.cols + Math.min(physics.cols - 1, gx)] || 0;
 
-          data[i] = 0;
-          data[i + 1] = 70 + wave * 0.4;
-          data[i + 2] = 150 + wave * 0.8;
+          const light = 8 * Math.sin(x * 0.01 + y * 0.006) + wave * 1.8;
+          const i = (y * canvas.width + x) * 4;
+
+          data[i] = 2 + Math.max(0, light);
+          data[i + 1] = 55 + light + wave * 0.4;
+          data[i + 2] = 125 + light * 2 + wave;
           data[i + 3] = 255;
         }
       }
