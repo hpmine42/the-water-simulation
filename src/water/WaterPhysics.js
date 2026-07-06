@@ -11,17 +11,18 @@ export class WaterPhysics {
   disturb(x, y, strength = 120) {
     const cx = Math.floor(x / this.resolution);
     const cy = Math.floor(y / this.resolution);
+    const radius = 8;
 
-    for (let y = -6; y <= 6; y++) {
-      for (let x = -6; x <= 6; x++) {
-        const px = cx + x;
-        const py = cy + y;
-
+    for (let yy = -radius; yy <= radius; yy++) {
+      for (let xx = -radius; xx <= radius; xx++) {
+        const px = cx + xx;
+        const py = cy + yy;
         if (px < 0 || py < 0 || px >= this.cols || py >= this.rows) continue;
 
-        const distance = Math.sqrt(x * x + y * y);
-        if (distance < 6) {
-          this.current[py * this.cols + px] += strength * (1 - distance / 6);
+        const distance = Math.sqrt(xx * xx + yy * yy);
+        if (distance < radius) {
+          const falloff = Math.cos((distance / radius) * Math.PI * 0.5);
+          this.current[py * this.cols + px] += strength * falloff;
         }
       }
     }
@@ -41,7 +42,7 @@ export class WaterPhysics {
           this.current[i + this.cols]
         ) / 2 - this.previous[i];
 
-        next[i] *= 0.985;
+        next[i] *= 0.988;
       }
     }
 
