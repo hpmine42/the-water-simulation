@@ -24,7 +24,7 @@ export default function WaterCanvas() {
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-      const force = last ? Math.min(35, Math.hypot(x - last.x, y - last.y) * 2) : 18;
+      const force = last ? Math.min(45, Math.hypot(x - last.x, y - last.y) * 2.5) : 20;
       physics.disturb(x, y, force);
       last = { x, y };
     };
@@ -44,12 +44,15 @@ export default function WaterCanvas() {
           const gy = Math.floor(y / physics.resolution);
           const wave = physics.current[Math.min(physics.rows - 1, gy) * physics.cols + Math.min(physics.cols - 1, gx)] || 0;
 
-          const light = 8 * Math.sin(x * 0.01 + y * 0.006) + wave * 1.8;
-          const i = (y * canvas.width + x) * 4;
+          const reflection = Math.sin(x * 0.018 + y * 0.012) * 10;
+          const shimmer = Math.max(0, Math.sin(x * 0.04 + y * 0.02)) * 18;
+          const depth = Math.min(50, Math.abs(wave));
+          const light = reflection + shimmer + wave * 2;
 
-          data[i] = 2 + Math.max(0, light);
-          data[i + 1] = 55 + light + wave * 0.4;
-          data[i + 2] = 125 + light * 2 + wave;
+          const i = (y * canvas.width + x) * 4;
+          data[i] = 3 + depth * 0.05;
+          data[i + 1] = 45 + light + depth * 0.2;
+          data[i + 2] = 125 + light * 2 + depth;
           data[i + 3] = 255;
         }
       }
