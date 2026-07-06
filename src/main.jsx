@@ -1,11 +1,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
+import WaterCanvas from './water/WaterCanvas';
 
 function App() {
   return (
     <main className="app">
-      <canvas className="water" />
+      <WaterCanvas />
     </main>
   );
 }
